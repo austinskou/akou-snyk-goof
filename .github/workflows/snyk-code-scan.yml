@@ -11,6 +11,9 @@ jobs:
   snyk-code:
     runs-on: ubuntu-latest
 
+    env:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -23,8 +26,8 @@ jobs:
       - name: Install Snyk CLI
         run: npm install -g snyk
 
-      - name: Authenticate with Snyk
-        run: snyk auth "${{ secrets.SNYK_TOKEN }}"
+      - name: Verify Snyk CLI version
+        run: snyk --version
 
       - name: Run full Snyk Code scan
         run: snyk code test --sarif-file-output=snyk-code.sarif --severity-threshold=medium
