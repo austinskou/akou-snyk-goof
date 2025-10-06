@@ -67,6 +67,19 @@ app.post('/hash', function (req, res) {
   res.send(`MD5 hash: ${hash}`);
 });
 
+// 🚨 Vulnerable route: command injection via unsanitized input
+app.get('/ping', function (req, res) {
+  const host = req.query.host || 'localhost';
+  const { exec } = require('child_process');
+  exec(`ping -c 1 ${host}`, (err, stdout, stderr) => {
+    if (err) {
+      res.status(500).send(`Error: ${stderr}`);
+    } else {
+      res.send(`Ping result:\n${stdout}`);
+    }
+  });
+});
+
 // Static
 app.use(st({ path: './public', url: '/public' }));
 
