@@ -28,33 +28,24 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-      # --- Install dependencies for Open Source scan ---
       - name: Install project dependencies
         run: npm install
 
       # --- Snyk Code (SAST) Scan ---
       - name: Run Snyk Code scan
-        run: snyk code test --sarif-file-output=snyk-code.sarif --severity-threshold=medium
+        run: snyk code test --severity-threshold=medium
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        continue-on-error: true
 
       # --- Snyk Open Source (SCA) Scan ---
       - name: Run Snyk Open Source scan
         run: snyk test --all-projects --severity-threshold=medium
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        continue-on-error: true
 
       # --- Upload SARIF Results to GitHub Security tab (Snyk Code only) ---
       - name: Upload Snyk Code SARIF to GitHub Security tab
+        if: always()  # ensures upload runs even if previous step fails
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk-code.sarif
-
-      # --- Upload SARIF File as Artifact (Snyk Code only) ---
-      - name: Upload Snyk Code SARIF as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: snyk-code-sarif
-          path: snyk-code.sarif
