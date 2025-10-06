@@ -59,6 +59,14 @@ app.get('/about_new', routes.about_new);
 app.get('/chat', routes.chat.get);
 app.put('/chat', routes.chat.add);
 app.delete('/chat', routes.chat.delete);
+
+// 🚨 Vulnerable route: weak hash + hardcoded fallback
+app.post('/hash', function (req, res) {
+  const password = req.body.password || 'default';
+  const hash = crypto.createHash('md5').update(password).digest('hex');
+  res.send(`MD5 hash: ${hash}`);
+});
+
 // Static
 app.use(st({ path: './public', url: '/public' }));
 
