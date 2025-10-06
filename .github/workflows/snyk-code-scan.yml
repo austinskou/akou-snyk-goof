@@ -1,0 +1,47 @@
+name: Snyk Security
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["dev", "test"]
+  pull_request:
+    branches: ["dev", "test"]
+
+permissions:
+  contents: read
+
+jobs:
+  snyk:
+    name: Snyk Code + Open Source Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # Optional: Set up Node.js if needed
+      # - name: Set up Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: 20
+
+      - name: Set up Snyk CLI
+        uses: snyk/actions/setup@806182742461562b67788a64410098c9d9b96adb
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Snyk Code test
+        run: snyk code test --sarif-file-output=snyk-code.sarif --severity-threshold=medium
+        continue-on-error: true
+
+      - name: Snyk Open Source monitor
+        run: snyk monitor --all-projects
+
+      - name: Upload SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: snyk-code.sarif
