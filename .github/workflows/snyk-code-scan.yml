@@ -1,4 +1,4 @@
-name: Snyk Code + Open Source Scan
+name: Snyk Code Scan
 
 on:
   workflow_dispatch:
