@@ -28,6 +28,10 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
+      # --- Install dependencies for Open Source scan ---
+      - name: Install project dependencies
+        run: npm install
+
       # --- Snyk Code (SAST) Scan ---
       - name: Run Snyk Code scan
         run: snyk code test --sarif-file-output=snyk-code.sarif --severity-threshold=medium
