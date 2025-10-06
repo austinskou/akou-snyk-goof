@@ -38,8 +38,8 @@ jobs:
       - name: Debug Snyk CLI version
         run: snyk --version
 
-      - name: Debug Snyk auth
-        run: snyk auth
+      - name: Debug Snyk token usage
+        run: snyk test --dry-run
         continue-on-error: true
 
       - name: Snyk Code test
