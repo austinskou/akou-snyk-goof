@@ -3,9 +3,9 @@ name: Snyk Security
 on:
   workflow_dispatch:
   push:
-    branches: ["dev", "test"]
+    branches: ["master"]
   pull_request:
-    branches: ["dev", "test"]
+    branches: ["master"]
 
 permissions:
   contents: read
@@ -19,6 +19,9 @@ jobs:
       security-events: write
       actions: read
 
+    env:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -31,8 +34,13 @@ jobs:
 
       - name: Set up Snyk CLI
         uses: snyk/actions/setup@806182742461562b67788a64410098c9d9b96adb
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      - name: Debug Snyk CLI version
+        run: snyk --version
+
+      - name: Debug Snyk auth
+        run: snyk auth
+        continue-on-error: true
 
       - name: Snyk Code test
         run: snyk code test --sarif-file-output=snyk-code.sarif --severity-threshold=medium
@@ -40,6 +48,7 @@ jobs:
 
       - name: Snyk Open Source monitor
         run: snyk monitor --all-projects
+        continue-on-error: true
 
       - name: Upload SARIF to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
