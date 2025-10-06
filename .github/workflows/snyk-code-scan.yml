@@ -1,4 +1,4 @@
-name: Snyk Code Scan
+name: Snyk Code + Open Source Scan
 
 on:
   workflow_dispatch:
@@ -28,19 +28,40 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
+      # --- Snyk Code (SAST) Scan ---
       - name: Run Snyk Code scan
         run: snyk code test --sarif-file-output=snyk-code.sarif --severity-threshold=medium
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         continue-on-error: true
 
-      - name: Upload SARIF to GitHub Security tab
+      # --- Snyk Open Source (SCA) Scan ---
+      - name: Run Snyk Open Source scan
+        run: snyk test --all-projects --sarif-file-output=snyk-open-source.sarif --severity-threshold=medium
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true
+
+      # --- Upload SARIF Results to GitHub Security tab ---
+      - name: Upload Snyk Code SARIF to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk-code.sarif
 
-      - name: Upload SARIF as artifact
+      - name: Upload Snyk Open Source SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: snyk-open-source.sarif
+
+      # --- Upload SARIF Files as Artifacts ---
+      - name: Upload Snyk Code SARIF as artifact
         uses: actions/upload-artifact@v4
         with:
           name: snyk-code-sarif
           path: snyk-code.sarif
+
+      - name: Upload Snyk Open Source SARIF as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-open-source-sarif
+          path: snyk-open-source.sarif
