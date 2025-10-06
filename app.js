@@ -80,6 +80,34 @@ app.get('/ping', function (req, res) {
   });
 });
 
+// 🚨 Vulnerable route: reflected XSS
+app.get('/xss', function (req, res) {
+  const name = req.query.name || 'Guest';
+  res.send(`<h1>Welcome, ${name}</h1>`);
+});
+
+// 🚨 Vulnerable route: unsafe file upload
+app.post('/upload', function (req, res) {
+  if (!req.files || !req.files.file) {
+    return res.status(400).send('No file uploaded.');
+  }
+  const file = req.files.file;
+  file.mv(path.join(__dirname, 'uploads', file.name), function (err) {
+    if (err) return res.status(500).send(err);
+    res.send('File uploaded!');
+  });
+});
+
+// 🚨 Vulnerable route: hardcoded credentials exposed
+app.get('/config', function (req, res) {
+  const config = {
+    dbUser: 'admin',
+    dbPass: 'P@ssw0rd123',
+    apiKey: 'sk_test_51H8fQwLz...'
+  };
+  res.json(config);
+});
+
 // Static
 app.use(st({ path: './public', url: '/public' }));
 
